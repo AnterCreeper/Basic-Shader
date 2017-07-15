@@ -29,8 +29,8 @@ void main()
 		float blockId = mc_Entity.x;
 		vec3 noise = texture2D(noisetex, position.xz / 256.0).rgb;
 		float maxStrength = 1.0 + rainStrength * 0.5;
-		float time = frameTimeCounte * 0.25;
-		float reset = cos(noise.z * 10.0 + time * 0.1);
+		float time = frameTimeCounter * 0.2;
+		float reset = sin(noise.z * 10.0 + time * 0.1);
 		reset = max(reset * reset, max(rainStrength, 0.1));
                 float x = noise.x * 10.0 + time;
                 float y = noise.y * 10.0 + time;
@@ -41,8 +41,8 @@ void main()
 	{
 		vec3 noise = texture2D(noisetex, (position.xz + 0.5) / 16.0).rgb;
 		float maxStrength = 1.0 + rainStrength * 0.5;
-		float time = frameTimeCounter * 3.0;
-		float reset = cos(noise.z * 10.0 + time * 0.1);
+		float time = frameTimeCounter * 0.12;
+		float reset = sin(noise.z * 10.0 + time * 0.1);
                 float x = noise.x * 10.0 + time;
                 float y = noise.y * 10.0 + time;
 		position.x += cos(pi*x) * cos(pi*x) * cos(pi*3*x) * cos(pi*5*x) * 0.12 * reset * maxStrength;
