@@ -307,23 +307,24 @@ vec3 Contrast(in vec3 color, in float contrast)
 void doDOF(vec3 color)
 {
     float z = ld(texture2D(depthtex0, texcoord.st).r)*far;
-	float focus = ld(texture2D(depthtex0, vec2(0.5)).r)*far;
-	float blursize = DOF_BlurSize*viewWidth/1280;
-	pcoc = min((abs(aperture * (focal * (z - focus)) / (z * (focus - focal))))*sizemult,pw*blursize); 
+    float focus = ld(texture2D(depthtex0, vec2(0.5)).r)*far;
+    float blursize = DOF_BlurSize*viewWidth/1280;
+    pcoc = min((abs(aperture * (focal * (z - focus)) / (z * (focus - focal))))*sizemult,pw*blursize); 
     pcoc += pow(distance(texcoord.st, vec2(0.5)),2.5) * 0.015;  //Add Edge Blur.
   
-	vec4 sample = vec4(0.0);
-	vec3 bcolor = vec3(0);
-	float nb = 0.0;
-	vec2 bcoord = vec2(0.0);
+    vec4 sample = vec4(0.0);
+    vec3 bcolor = vec3(0);
+    float nb = 0.0;
+    vec2 bcoord = vec2(0.0);
 	
-	if (pcoc > pw){
-	 for (int i = 0; i < 60; i++) {
-	  	 bcolor += pow(texture2D(gcolor, texcoord.st + circle_offsets[i]*pcoc*vec2(1.0,aspectRatio)).rgb,vec3(2.2));
-	 }
-	 color.rgb = bcolor / 60;
+    if (pcoc > pw){
+      for (int i = 0; i < 60; i++) {
+	bcolor += pow(texture2D(gcolor, texcoord.st + circle_offsets[i]*pcoc*vec2(1.0,aspectRatio)).rgb,vec3(2.2));
+      }
+      color.rgb = bcolor / 60;
     }
 }
+
 void AddRainFogScatter(inout vec3 color, in BloomDataStruct bloomData)
 {
 	const float    bloomSlant = 0.1f;
@@ -365,22 +366,22 @@ void AddRainFogScatter(inout vec3 color, in BloomDataStruct bloomData)
 
 void main() {
 
-    vec3 color = vec3(1.0f);
+    vec3 color = vec3(0.0f);
 	
-	doDOF(color);
+    doDOF(color);
     color = pow(color,vec3(2.2f));
 	
-	CalculateBloom(bloomData);
+    CalculateBloom(bloomData);
     color.rgb = mix(color,bloomData.bloom,0.01);
 
-	AddRainFogScatter(color, bloomData);
-	CalculateExposure(color);
-	Vignette(color);
+    AddRainFogScatter(color, bloomData);
+    CalculateExposure(color);
+    Vignette(color);
 
     Tonemapping(color);
     color = pow(color,vec3(1.0f / (1.0f + 1.2f)));
     ColorProcess(color);
-    Contrast(color,1.12f);
+    Contrast(color,1.14f);
 
     CalculateFilmColorMapping(color);
     LowtoneSaturate(color);
@@ -388,6 +389,6 @@ void main() {
     addCameraNoise(color);
     doCinematicMode(color);
 
- 	gl_FragColor = vec4(color.rgb, 1.0f);
+    gl_FragColor = vec4(color.rgb, 1.0f);
 
 }
