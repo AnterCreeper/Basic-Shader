@@ -1,6 +1,8 @@
 #version 120
 
 // This file is part of Basic Shader.
+// This shader don't have any profile.
+// Every thing is configured by default.
 //
 // (C) Copyright 2016 AnterCreeper <wangzhihao9@yeah.net>
 // This Shader is Written by AnterCreeper. Some rights reserved.
