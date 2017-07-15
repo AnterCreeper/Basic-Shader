@@ -1,4 +1,8 @@
 #version 120
+// This file is part of Basic Shader.
+// Read LICENSE First at composite.fsh
+
+//This is Final pre-processed Part.
 
 const bool gcolorMipmapEnabled = true;
 
@@ -62,7 +66,7 @@ void CalculateRainFog(inout vec3 color)
         vec4 fragposition = gbufferProjectionInverse * vec4(texcoord.s * 2.0f - 1.0f, texcoord.t * 2.0f - 1.0f, 2.0f * texture2D(depthtex1, texcoord.st).x - 1.0f, 1.0f);
 	     fragposition /= fragposition.w;
 
-        vec3 fogColor = vec3(0.7,0.8,0.8) * 0.055f;
+        vec3 fogColor = vec3(0.7,0.8,0.8) * 0.12f;
 
 	float fogDensity = 0.00018f * rainStrength;
 	      fogDensity *= mix(0.0f, 1.0f, pow(eyeBrightnessSmooth.y / 240.0f, 6.0f));
@@ -104,7 +108,7 @@ void CalculateMieFog(inout vec3 color) {
 	      fogFactor = min(fogFactor, 0.7f);
 	      fogFactor = sin(fogFactor * 3.1415 / 2.0f);
 	      fogFactor = pow(fogFactor, 0.5f);
-              fogFactor *= 0.62f;
+              fogFactor *= 0.68f;
 
 	color.rgb = mix(color.rgb, fogColor * 0.002f, vec3(fogFactor));
 	color.rgb *= mix(vec3(1.0f), pow(fogColor,vec3(4)), vec3(fogFactor));
@@ -126,6 +130,7 @@ void main() {
    
    vec3 color = texture2D(gcolor,texcoord.st).rgb;
    
+   //Add fog.
    CalculateMieFog(color);
    CalculateScatteringFog(color);
    CalculateRainFog(color);
