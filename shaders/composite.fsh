@@ -1,9 +1,9 @@
 #version 120
+
 // This file is part of Basic Shader.
 //
 // (C) Copyright 2016 AnterCreeper <wangzhihao9@yeah.net>
-// Basic Natural Cinematic Shaderpack
-// Written by AnterCreeper. Some rights reserved.
+// This Shader is Written by AnterCreeper. Some rights reserved.
 //
 // Basic Shader is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,9 +14,10 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-
+//
 // You should have received a copy of the GNU General Public License
-// along with Basic Shader.  If not, see <http://www.gnu.org/licenses/>.
+// along with Basic Shader at /LICENSE.
+// If not, see <http://www.gnu.org/licenses/>.
     
 #define SHADOW_MAP_BIAS 0.85
 
@@ -132,65 +133,6 @@ float noise(in vec3 pos)
 	return mix(xy1, xy2, f.z);
 }
 
-/*
-float hbao(in vec2 coord) {
-
-	const float samplingRadius = 0.6;
-	const int samplingDirections = 8;
-	const float samplingStep = 0.004;
-	const int numSampleSteps = 4;
-	const float tangentBias = 0.2;
-	const float PI = 3.14159265;
-
-	vec3 viewPosition = GetViewSpacePosition(coord).xyz;
-	vec3 viewNormal = GetNormals(coord);
-
-	float total = 0.0;
-	float sampleDirectionIncrement = 2.0 * PI / float(samplingDirections);
-
-	vec2 randomRotation = CalculateNoisePattern1(3).xy;
-
-	for(int i = 0; i < samplingDirections; i++) {
-		//Holding off jittering as long as possible.
-		float samplingAngle = i * sampleDirectionIncrement; //Azimuth angle theta in the paper.
-		vec2 sampleDirection = vec2(cos(samplingAngle * randomRotation.x), sin(samplingAngle * randomRotation.y));
-
-		#ifdef NVIDIA_HBAO
-			//Random Rotation Defined by nVidia
-			sampleDirection = rotateDirection(vec2(cos(samplingAngle), sin(samplingAngle)), randomRotation.xy);
-			sampleDirection.y = -sampleDirection.y;
-		#endif
-
-		float tangentAngle = acos(dot(vec3(sampleDirection, 0.0), viewNormal)) - (0.5 * PI) + tangentBias;
-		float horizonAngle = tangentAngle;
-		vec3 lastDiff = vec3(0.0);
-
-		for(int j = 0; j < numSampleSteps; j++) {
-			//Marching Time
-			vec2 sampleOffset = float(j + 1) * samplingStep * sampleDirection;
-			vec2 offset = coord + sampleOffset;
-
-			vec3 offsetViewPosition = GetViewSpacePosition(offset).xyz;
-			vec3 differential = offsetViewPosition - viewPosition;
-
-			if(length(differential) < samplingRadius) { //skip samples outside local sample space
-				lastDiff = differential;
-				float elevationAngle = atan(differential.z / length(differential.xy));
-				horizonAngle = max(horizonAngle, elevationAngle);
-			}
-		}
-		float normalDiff = length(lastDiff) / samplingRadius;
-		float atten = 1.0 - pow(normalDiff, 2);
-
-		float AO = clamp(atten * (sin(horizonAngle) - sin(tangentAngle)), 0.0, 1.0);
-		total += 1.0 - AO;
-	}
-	total /= samplingDirections;
-
-	return total;
-}
-*/
-
 void main() {
 
 	vec4 color = texture2D(gcolor, texcoord.st);
@@ -203,7 +145,7 @@ void main() {
 	
 	float shade = shadowMapping(worldPosition, dist, normal, color.a);
 	color.rgb *= 1.0 - shade * 0.38;
-    color.rgb *= shade * vec3(0.7,0.8,1.0) + (1 - shade) * vec3(0.96,0.97,0.93);
+        color.rgb *= shade * vec3(0.7,0.8,1.0) + (1 - shade) * vec3(0.96,0.97,0.93);
 	
 /* DRAWBUFFERS:0 */
 	gl_FragData[0] = color;
