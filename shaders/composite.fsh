@@ -31,7 +31,6 @@ const int gnormalFormat = RG16;
 const int shadowMapResolution = 2048;
 const float shadowDistance = 64.0;		//75 draw distance of shadows
 
-const int noiseTextureResolution = 720;
 const float sunPathRotation = -40.0;
 const bool shadowHardwareFiltering = true;
 
