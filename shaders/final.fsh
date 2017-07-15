@@ -1,4 +1,6 @@
 #version 120
+// This file is part of Basic Shader.
+// Read LICENSE First at composite.fsh
 
 uniform sampler2D gcolor;
 uniform sampler2D composite;
@@ -25,7 +27,7 @@ uniform float frameTimeCounter;
 uniform int   isEyeInWater;
 uniform ivec2 eyeBrightnessSmooth;
 
-const float noiseStrength = 0.82;   //Strength of Noise On Camera.
+const float noiseStrength = 0.68;   //Strength of Noise On Camera.
 const float CinematicHeight = 16;   //2.35:1 for Wide Screen,16:9 for Normal Film.
 const float CinematicWidth = 9;
 
