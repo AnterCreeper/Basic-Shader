@@ -145,7 +145,7 @@ void main() {
 	
 	float shade = shadowMapping(worldPosition, dist, normal, color.a);
 	color.rgb *= 1.0 - shade * 0.38;
-        color.rgb *= shade * vec3(0.7,0.8,1.0) + (1 - shade) * vec3(0.96,0.97,0.93);
+        color.rgb *= shade * vec3(0.7,0.8,1.0) + (1 - shade) * vec3(0.96,0.97,0.94);
 	
 /* DRAWBUFFERS:0 */
 	gl_FragData[0] = color;
