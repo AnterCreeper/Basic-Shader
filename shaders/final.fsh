@@ -140,8 +140,8 @@ vec3 Tonemapping(vec3 color) {
 	color = (color*(a*color+b))/(color*(c*color+d)+e);
 	color = clamp(color, vec3(0.0), vec3(1.0));
 	float sunfade = 1.0-clamp(1.0-exp(-(sunPosition.z/500.0)),0.0,1.0);
-    color = pow(color,vec3(1.0/(1.2+(1.2*sunfade))));
-    return color;
+        color = pow(color,vec3(1.0/(1.2+(1.2*sunfade))));
+        return color;
 
 }
 
@@ -201,7 +201,7 @@ void CalculateBloom(inout BloomDataStruct bloomData) {		//Retrieve previously ca
  	bloomData.bloom += bloomData.blur4 * bloomWeight[4];
  	bloomData.bloom += bloomData.blur5 * bloomWeight[5];
 
-    bloomData.bloom = bloomData.bloom * pow(length(bloomData.bloom),0.4);
+        bloomData.bloom = bloomData.bloom * pow(length(bloomData.bloom),0.4);
 
 }
 
@@ -210,7 +210,7 @@ float GetDepthLinear(in vec2 coord) {
 }
 
 float ld(float depth) {
-    return (2.0 * near) / (far + near - depth * (far - near));
+        return (2.0 * near) / (far + near - depth * (far - near));
 }
 
 float luma(vec3 color) {
@@ -221,7 +221,7 @@ void  ColorProcess(inout vec3 color) {
 
 	float gamma		= 1.07;
 	float exposure		= 1.24;
-    float saturation        = 1.03;
+        float saturation        = 1.03;
 	float darkness		= 0.03;
 	float brightness	= 0.03;
 
@@ -238,7 +238,7 @@ void  ColorProcess(inout vec3 color) {
 
 void CalculateFilmColorMapping(inout vec3 color){
 
-    const float p = 13.0;
+        const float p = 13.0;
 	color = (pow(color, vec3(p)) - color) / (pow(color, vec3(p)) - 1.0);
 	color = clamp(color, vec3(0.0), vec3(1.0));
 	
