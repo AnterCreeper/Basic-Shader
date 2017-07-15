@@ -1,8 +1,24 @@
 #version 120
+// This file is part of Basic Shader.
+//
+// (C) Copyright 2016 AnterCreeper <wangzhihao9@yeah.net>
+// Basic Natural Cinematic Shaderpack
+// Written by AnterCreeper. Some rights reserved.
+//
+// Basic Shader is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Basic Shader is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 
+// You should have received a copy of the GNU General Public License
+// along with Basic Shader.  If not, see <http://www.gnu.org/licenses/>.
+    
 #define SHADOW_MAP_BIAS 0.85
-
-//#define Clouds
 
 const int RG16 = 0;
 const int RGB8 = 0;
