@@ -248,7 +248,7 @@ void main() {
 	vec3 color = pow(texture2D(gcolor,texcoord.st).rgb,vec3(2.2f));
 
 	CalculateBloom(bloomData);
-        color.rgb = mix(color,bloomData.bloom,0.02);
+        color.rgb = mix(color,bloomData.bloom,0.006);
 
 	AddRainFogScatter(color, bloomData);
 	CalculateExposure(color);
