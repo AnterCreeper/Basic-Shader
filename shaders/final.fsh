@@ -1,34 +1,9 @@
 #version 120
-// This file is part of Basic Shader.
-// Read LICENSE First at composite.fsh
 
-#define DOF_DistantBlur_Range 304				    //blur distance from player position (best : render distance(in block) * 2.5 - 16)
-#define DOF_BlurSize 8
-
- //lens properties @default camera
-    /*
-	 "Near to human eye (for gameplay)":
-
-	 const float focal = 0.024;
-	 float aperture = 0.009;	
-	 const float sizemult = 100.0;
-	 ----------------------------------
-	 "Tilt shift (cinematics)":
-
-	 const float focal = 0.3;
-	 float aperture = 0.3;	
-	 const float sizemult = 1.0;
-    */	
-	
- const float focal = 0.05;
- float aperture = focal/7.0;	
- const float sizemult = 100.0;
-	  
 uniform sampler2D gcolor;
 uniform sampler2D composite;
 uniform sampler2D noisetex;
 uniform sampler2D gdepthtex;
-uniform sampler2D depthtex0;
 
 varying vec4 texcoord;
 
@@ -47,79 +22,13 @@ uniform float aspectRatio;
 uniform float rainStrength;
 uniform float frameTimeCounter;
 
-uniform int isEyeInWater;
-uniform vec3 sunPosition;
+uniform int   isEyeInWater;
 uniform ivec2 eyeBrightnessSmooth;
 
-const float noiseStrength = 0.68;   //Strength of Noise On Camera.
+const float noiseStrength = 0.62;   //Strength of Noise On Camera.
 const float CinematicHeight = 16;   //2.35:1 for Wide Screen,16:9 for Normal Film.
 const float CinematicWidth = 9;
 
-float pw = 1.0/ viewWidth;
-float ph = 1.0/ viewHeight;
-
-//60 offsets!
-const vec2 circle_offsets[60] = vec2[60]  (  vec2( 0.0000, 0.2500 ),
-									vec2( -0.2165, 0.1250 ),
-									vec2( -0.2165, -0.1250 ),
-									vec2( -0.0000, -0.2500 ),
-									vec2( 0.2165, -0.1250 ),
-									vec2( 0.2165, 0.1250 ),
-									vec2( 0.0000, 0.5000 ),
-									vec2( -0.2500, 0.4330 ),
-									vec2( -0.4330, 0.2500 ),
-									vec2( -0.5000, 0.0000 ),
-									vec2( -0.4330, -0.2500 ),
-									vec2( -0.2500, -0.4330 ),
-									vec2( -0.0000, -0.5000 ),
-									vec2( 0.2500, -0.4330 ),
-									vec2( 0.4330, -0.2500 ),
-									vec2( 0.5000, -0.0000 ),
-									vec2( 0.4330, 0.2500 ),
-									vec2( 0.2500, 0.4330 ),
-									vec2( 0.0000, 0.7500 ),
-									vec2( -0.2565, 0.7048 ),
-									vec2( -0.4821, 0.5745 ),
-									vec2( -0.6495, 0.3750 ),
-									vec2( -0.7386, 0.1302 ),
-									vec2( -0.7386, -0.1302 ),
-									vec2( -0.6495, -0.3750 ),
-									vec2( -0.4821, -0.5745 ),
-									vec2( -0.2565, -0.7048 ),
-									vec2( -0.0000, -0.7500 ),
-									vec2( 0.2565, -0.7048 ),
-									vec2( 0.4821, -0.5745 ),
-									vec2( 0.6495, -0.3750 ),
-									vec2( 0.7386, -0.1302 ),
-									vec2( 0.7386, 0.1302 ),
-									vec2( 0.6495, 0.3750 ),
-									vec2( 0.4821, 0.5745 ),
-									vec2( 0.2565, 0.7048 ),
-									vec2( 0.0000, 1.0000 ),
-									vec2( -0.2588, 0.9659 ),
-									vec2( -0.5000, 0.8660 ),
-									vec2( -0.7071, 0.7071 ),
-									vec2( -0.8660, 0.5000 ),
-									vec2( -0.9659, 0.2588 ),
-									vec2( -1.0000, 0.0000 ),
-									vec2( -0.9659, -0.2588 ),
-									vec2( -0.8660, -0.5000 ),
-									vec2( -0.7071, -0.7071 ),
-									vec2( -0.5000, -0.8660 ),
-									vec2( -0.2588, -0.9659 ),
-									vec2( -0.0000, -1.0000 ),
-									vec2( 0.2588, -0.9659 ),
-									vec2( 0.5000, -0.8660 ),
-									vec2( 0.7071, -0.7071 ),
-									vec2( 0.8660, -0.5000 ),
-									vec2( 0.9659, -0.2588 ),
-									vec2( 1.0000, -0.0000 ),
-									vec2( 0.9659, 0.2588 ),
-									vec2( 0.8660, 0.5000 ),
-									vec2( 0.7071, 0.7071 ),
-									vec2( 0.5000, 0.8660 ),
-									vec2( 0.2588, 0.9659 ));
-									
 void Vignette(inout vec3 color) {
 
 	float dist = distance(texcoord.st, vec2(0.5f)) * 2.0f;
@@ -139,9 +48,7 @@ vec3 Tonemapping(vec3 color) {
 	const float e = 0.14f;
 	color = (color*(a*color+b))/(color*(c*color+d)+e);
 	color = clamp(color, vec3(0.0), vec3(1.0));
-	float sunfade = 1.0-clamp(1.0-exp(-(sunPosition.z/500.0)),0.0,1.0);
-        color = pow(color,vec3(1.0/(1.2+(1.2*sunfade))));
-        return color;
+        return color;
 
 }
 
@@ -201,27 +108,20 @@ void CalculateBloom(inout BloomDataStruct bloomData) {		//Retrieve previously ca
  	bloomData.bloom += bloomData.blur4 * bloomWeight[4];
  	bloomData.bloom += bloomData.blur5 * bloomWeight[5];
 
-        bloomData.bloom = bloomData.bloom * pow(length(bloomData.bloom),0.4);
+        bloomData.bloom = bloomData.bloom * pow(length(bloomData.bloom),0.4);
 
 }
 
 float GetDepthLinear(in vec2 coord) {
+
 	return 2.0f * near * far / (far + near - (2.0f * texture2D(gdepthtex, coord).x - 1.0f) * (far - near));
-}
-
-float ld(float depth) {
-        return (2.0 * near) / (far + near - depth * (far - near));
-}
-
-float luma(vec3 color) {
-	return dot(color,vec3(0.299, 0.587, 0.114));
 }
 
 void  ColorProcess(inout vec3 color) {
 
 	float gamma		= 1.07;
 	float exposure		= 1.24;
-        float saturation        = 1.03;
+        float saturation        = 1.06;
 	float darkness		= 0.03;
 	float brightness	= 0.03;
 
@@ -238,7 +138,7 @@ void  ColorProcess(inout vec3 color) {
 
 void CalculateFilmColorMapping(inout vec3 color){
 
-        const float p = 13.0;
+        const float p = 13.0;
 	color = (pow(color, vec3(p)) - color) / (pow(color, vec3(p)) - 1.0);
 	color = clamp(color, vec3(0.0), vec3(1.0));
 	
@@ -269,9 +169,9 @@ float vec3ToFloat(vec3 vec3Input) {
 
 void addCameraNoise(inout vec3 color) {
 	
-    vec2 aspectcorrect = vec2(aspectRatio, 1.0);
-    vec3 rgbNoise = texture2D(noisetex, texcoord.st * max(viewHeight,viewWidth) * aspectcorrect + vec2(frameTimeCounter)).rgb;
-    color = mix(color, rgbNoise, vec3ToFloat(rgbNoise) * noiseStrength / (color.r + color.g + color.b + 0.3) / 18);
+        vec2 aspectcorrect = vec2(aspectRatio, 1.0);
+        vec3 rgbNoise = texture2D(noisetex, texcoord.st * max(viewHeight,viewWidth) * aspectcorrect + vec2(frameTimeCounter)).rgb;
+        color = mix(color, rgbNoise, vec3ToFloat(rgbNoise) * noiseStrength / (color.r + color.g + color.b + 0.3) / 18);
 
 }
 
@@ -294,7 +194,7 @@ void doCinematicMode(inout vec3 color) {
   
 }
 
-vec3 Contrast(in vec3 color, in float contrast)
+vec3    Contrast(in vec3 color, in float contrast)
 {
 	float colorLength = length(color);
 	vec3 nColor = color / colorLength;
@@ -304,28 +204,7 @@ vec3 Contrast(in vec3 color, in float contrast)
 	return nColor * colorLength;
 }
 
-void doDOF(vec3 color)
-{
-    float z = ld(texture2D(depthtex0, texcoord.st).r)*far;
-    float focus = ld(texture2D(depthtex0, vec2(0.5)).r)*far;
-    float blursize = DOF_BlurSize*viewWidth/1280;
-    pcoc = min((abs(aperture * (focal * (z - focus)) / (z * (focus - focal))))*sizemult,pw*blursize); 
-    pcoc += pow(distance(texcoord.st, vec2(0.5)),2.5) * 0.015;  //Add Edge Blur.
-  
-    vec4 sample = vec4(0.0);
-    vec3 bcolor = vec3(0);
-    float nb = 0.0;
-    vec2 bcoord = vec2(0.0);
-	
-    if (pcoc > pw){
-      for (int i = 0; i < 60; i++) {
-	bcolor += pow(texture2D(gcolor, texcoord.st + circle_offsets[i]*pcoc*vec2(1.0,aspectRatio)).rgb,vec3(2.2));
-      }
-      color.rgb = bcolor / 60;
-    }
-}
-
-void AddRainFogScatter(inout vec3 color, in BloomDataStruct bloomData)
+void 	AddRainFogScatter(inout vec3 color, in BloomDataStruct bloomData)
 {
 	const float    bloomSlant = 0.1f;
 	const float[6] bloomWeight = float[6] (pow(6.0f, bloomSlant),
@@ -366,29 +245,26 @@ void AddRainFogScatter(inout vec3 color, in BloomDataStruct bloomData)
 
 void main() {
 
-    vec3 color = vec3(0.0f);
-	
-    doDOF(color);
-    color = pow(color,vec3(2.2f));
-	
-    CalculateBloom(bloomData);
-    color.rgb = mix(color,bloomData.bloom,0.01);
+	vec3 color = pow(texture2D(gcolor,texcoord.st).rgb,vec3(2.2f));
 
-    AddRainFogScatter(color, bloomData);
-    CalculateExposure(color);
-    Vignette(color);
+	CalculateBloom(bloomData);
+        color.rgb = mix(color,bloomData.bloom,0.02);
 
-    Tonemapping(color);
-    color = pow(color,vec3(1.0f / (1.0f + 1.2f)));
-    ColorProcess(color);
-    Contrast(color,1.14f);
+	AddRainFogScatter(color, bloomData);
+	CalculateExposure(color);
+	Vignette(color);
 
-    CalculateFilmColorMapping(color);
-    LowtoneSaturate(color);
+        Tonemapping(color);
+        color = pow(color,vec3(1.0f / (1.0f + 1.2f)));
+        ColorProcess(color);
+        Contrast(color,1.14f);
 
-    addCameraNoise(color);
-    doCinematicMode(color);
+        CalculateFilmColorMapping(color);
+        LowtoneSaturate(color);
 
-    gl_FragColor = vec4(color.rgb, 1.0f);
+        addCameraNoise(color);
+        //doCinematicMode(color);
+
+ 	gl_FragColor = vec4(color.rgb, 1.0f);
 
 }

@@ -1,26 +1,5 @@
 #version 120
 
-// This file is part of Basic Shader.
-// This shader don't have any profile.
-// Every thing is configured by default.
-//
-// (C) Copyright 2016 AnterCreeper <wangzhihao9@yeah.net>
-// This Shader is Written by AnterCreeper. Some rights reserved.
-//
-// Basic Shader is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Basic Shader is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Basic Shader at /LICENSE.
-// If not, see <http://www.gnu.org/licenses/>.
-    
 #define SHADOW_MAP_BIAS 0.85
 
 const int RG16 = 0;
@@ -96,66 +75,6 @@ float shadowMapping(vec4 worldPosition, float dist, vec3 normal, float alpha) {
 	return max(shade, extShadow);
 }
 
-#define hash_fast(p) fract(mod(p.x, 1.0) * 73758.23f - p.y)
-
-float hash(vec2 p) {
-	vec3 p3 = fract(vec3(p.xyx) * 0.2031);
-	p3 += dot(p3, p3.yzx + 19.19);
-	return fract((p3.x + p3.y) * p3.z);
-}
-
-float hashnoise(vec2 p) {
-	vec2 i = floor(p);
-	vec2 f = fract(p);
-	vec2 u = f*f*(3.0-2.0*f);
-	return -1.0 + 2.0 * mix(
-		mix(hash(i),                 hash(i + vec2(1.0,0.0)), u.x),
-		mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x),
-	u.y);
-}
-
-float bighash(vec2 uv)
-{
-    float sx = cos(500 * uv.x);
-    float sy = sin(500 * uv.y);
-    sx = mix(sx, cos(uv.y * 1000), 0.5);
-    sy = mix(sy, sin(uv.x * 1000), 0.5);
-    
-    vec2 b = vec2(sx, sy);
-    vec2 bn = normalize(b);
-
-    vec2 _b = b;
-	b.x = _b.x * bn.x - _b.y * bn.y;
-    b.y = _b.x * bn.y + _b.y * bn.x; 
-    vec2 l = uv - vec2(sin(b.x), cos(b.y));
-    return length(l - b) - 0.5;
-}
- 
-float fbm(vec2 p) {
-	float f = 0.0;
-	f += 0.50000*bighash(p); p = p*2.5;
-	f += 0.25000*bighash(p); p = p*2.5;
-	f += 0.12500*bighash(p); p = p*2.5;
-	f += 0.06250*bighash(p); p = p*2.5;
-	f += 0.03125*bighash(p);
-	return f / 0.984375;
-}
-
-float noise(in vec3 pos)
-{
-	pos.z += 0.0f;
-	vec3 p = floor(pos);
-	vec3 f = fract(pos);
-
-	vec2 uv =  (p.xy + p.z * vec2(17.0f)) + f.xy;
-	vec2 uv2 = (p.xy + (p.z + 1.0f) * vec2(17.0f)) + f.xy;
-	vec2 coord =  (uv  + 0.5f) / noiseTextureResolution;
-	vec2 coord2 = (uv2 + 0.5f) / noiseTextureResolution;
-	float xy1 = fbm(coord);
-	float xy2 = fbm(coord2);
-	return mix(xy1, xy2, f.z);
-}
-
 void main() {
 
 	vec4 color = texture2D(gcolor, texcoord.st);
@@ -168,7 +87,7 @@ void main() {
 	
 	float shade = shadowMapping(worldPosition, dist, normal, color.a);
 	color.rgb *= 1.0 - shade * 0.38;
-        color.rgb *= shade * vec3(0.7,0.8,1.0) + (1 - shade) * vec3(0.96,0.97,0.94);
+        color.rgb *= shade * vec3(0.7,0.8,1.0) + (1 - shade) * vec3(0.96,0.97,0.93);
 	
 /* DRAWBUFFERS:0 */
 	gl_FragData[0] = color;
