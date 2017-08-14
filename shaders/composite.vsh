@@ -1,147 +1,173 @@
 #version 120
+//#define MODERN
+
+varying vec4 texcoord;
+
+uniform int worldTime;
+
+uniform float sunAngle;
+uniform float rainStrength;
+uniform int heldItemId;
 
 uniform vec3 sunPosition;
 uniform vec3 moonPosition;
-uniform mat4 gbufferModelViewInverse;
-uniform int worldTime;
+uniform vec3 upPosition;
 
-varying vec4 texcoord;
-varying vec3 lightPosition;
-varying vec3 worldSunPosition;
-varying vec3 cloudBase1;
-varying vec3 cloudBase2;
-varying vec3 cloudLight1;
-varying vec3 cloudLight2;
-varying float extShadow;
+varying float timeSunrise;
+varying float timeNoon;
+varying float timeSunset;
+varying float timeMidnight;
+varying float timeSkyDark;
 
-#define SUNRISE 23200
-#define SUNSET 12800
-#define FADE_START 500
-#define FADE_END 250
+varying vec3 sunlight;
+varying vec3 ambientColor;
+varying vec3 colorTorchlight;
 
-#define SUNSET_START 11500.0
-#define SUNSET_MID1 12300.0
-#define SUNSET_MID2 13600.0
-#define SUNSET_MID3 14200.0
-#define SUNSET_END 14500.0
-#define SUNRISE_START 21000.0
-#define SUNRISE_MID1 22000.0
-#define SUNRISE_MID2 22500.0
-#define SUNRISE_MID3 23500.0
-#define SUNRISE_END 24000.0
+varying float SdotU;
+varying float MdotU;
+varying float sunVisibility;
+varying float moonVisibility;
+varying float handItemLight;
 
-const vec3 BASE1_DAY = vec3(1.0,0.95,0.9), BASE2_DAY = vec3(0.3,0.315,0.325);
-const vec3 LIGHTING1_DAY = vec3(0.7,0.75,0.8), LIGHTING2_DAY = vec3(1.8, 1.6, 1.35);
+varying vec3 lightVector;
 
-const vec3 BASE1_SUNSET = vec3(0.6,0.6,0.72), BASE2_SUNSET = vec3(0.1,0.1,0.1);
-const vec3 LIGHTING1_SUNSET = vec3(0.63,0.686,0.735), LIGHTING2_SUNSET = vec3(1.2, 0.84, 0.72);
+varying vec3 sunVec;
+varying vec3 moonVec;
+varying vec3 upVec;
 
-const vec3 BASE1_NIGHT_NOMOON = vec3(0.27,0.27,0.324), BASE2_NIGHT_NOMOON = vec3(0.05,0.05,0.1);
-const vec3 LIGHTING1_NIGHT_NOMOON = vec3(1.5,1.5,1.5), LIGHTING2_NIGHT_NOMOON = vec3(0.8,0.8,0.9);
-
-const vec3 BASE1_NIGHT = vec3(0.075,0.075,0.09), BASE2_NIGHT = vec3(0.05,0.05,0.1);
-const vec3 LIGHTING1_NIGHT = vec3(6.0,6.0,6.3), LIGHTING2_NIGHT = vec3(1.0,1.0,1.0);
-
+////////////////////sunlight color////////////////////
+////////////////////sunlight color////////////////////
+////////////////////sunlight color////////////////////
+const ivec4 ToD[25] = ivec4[25](ivec4(0,200,134,48), //hour,r,g,b
+								ivec4(1,200,134,48),
+								ivec4(2,200,134,48),
+								ivec4(3,200,134,48),
+								ivec4(4,200,134,48),
+								ivec4(5,200,134,48),
+								ivec4(6,200,134,90),
+								ivec4(7,200,180,110),
+								ivec4(8,200,186,132),
+								ivec4(9,200,195,145),
+								ivec4(10,200,199,160),
+								ivec4(11,200,200,175),
+								ivec4(12,200,200,185),
+								ivec4(13,200,200,175),
+								ivec4(14,200,199,160),
+								ivec4(15,200,195,145),
+								ivec4(16,200,186,132),
+								ivec4(17,200,180,110),
+								ivec4(18,200,153,90),
+								ivec4(19,200,134,48),
+								ivec4(20,200,134,48),
+								ivec4(21,200,134,48),
+								ivec4(22,200,134,48),
+								ivec4(23,200,134,48),
+								ivec4(24,200,134,48));
+								
 void main() {
+
+	handItemLight = 0.0;
+	if (heldItemId == 50) {
+		// torch
+		handItemLight = 0.5;
+	} else if (heldItemId == 76 || heldItemId == 94) {
+		// active redstone torch / redstone repeater
+		handItemLight = 0.1;
+	} else if (heldItemId == 89) {
+		// lightstone
+		handItemLight = 0.6;
+	} else if (heldItemId == 10 || heldItemId == 11 || heldItemId == 51) {
+		// lava / lava / fire
+		handItemLight = 0.5;
+	} else if (heldItemId == 91) {
+		// jack-o-lantern
+		handItemLight = 0.6;
+	} else if (heldItemId == 327) {
+		handItemLight = 0.2;
+	}
+	
 	gl_Position = ftransform();
+	
+	float timePow = 3.0f;
+	float timefract = worldTime;
+	
+	if (sunAngle < 0.5f) {
+		lightVector = normalize(sunPosition);
+	} else {
+		lightVector = normalize(moonPosition);
+	}
+	
+	sunVec = normalize(sunPosition);
+	moonVec = normalize(-sunPosition);
+	upVec = normalize(upPosition);
+	
+	SdotU = dot(sunVec,upVec);
+	MdotU = dot(moonVec,upVec);
+	sunVisibility = pow(clamp(SdotU+0.1,0.0,0.1)/0.1,2.0);
+	moonVisibility = pow(clamp(MdotU+0.1,0.0,0.1)/0.1,2.0);
+	
+	float hour = mod(worldTime/1000.0+6.0,24);
+	
+	ivec4 temp = ToD[int(floor(hour))];
+	ivec4 temp2 = ToD[int(floor(hour)) + 1];
+	
+	sunlight = mix(vec3(temp.yzw),vec3(temp2.yzw),(hour-float(temp.x))/float(temp2.x-temp.x))/255.0f;
+	
+	timeSunrise  = ((clamp(sunAngle, 0.95, 1.0f)  - 0.95f) / 0.05f) + (1.0 - (clamp(sunAngle, 0.0, 0.25) / 0.25f));  
+	timeNoon     = ((clamp(sunAngle, 0.0, 0.25f)) 	       / 0.25f) - (	 (clamp(sunAngle, 0.25f, 0.5f) - 0.25f) / 0.25f);
+	timeSunset   = ((clamp(sunAngle, 0.25f, 0.5f) - 0.25f) / 0.25f) - (	 (clamp(sunAngle, 0.5f, 0.52) - 0.5f) / 0.02f);  
+	timeMidnight = ((clamp(sunAngle, 0.5f, 0.52f) - 0.5f)  / 0.02f) - (      (clamp(sunAngle, 0.95, 1.0) - 0.95f) / 0.05f);
+	
+	timeSunrise  = pow(timeSunrise, timePow);
+	timeNoon     = pow(timeNoon, 1.0f/timePow);
+	timeSunset   = pow(timeSunset, timePow);
+	timeMidnight = pow(timeMidnight, 1.0f/timePow);
+	
+	timeSkyDark = ((clamp(timefract, 12000.0, 16000.0) - 12000.0) / 4000.0) - ((clamp(timefract, 22000.0, 24000.0) - 22000.0) / 2000.0);
+	timeSkyDark = pow(timeSkyDark, 3.0f);
+	
+	vec3 skycolor_sunrise = vec3(0.5, 0.7, 1.0) * 0.2 * (1.0 - rainStrength) * timeSunrise;
+	vec3 skycolor_noon = vec3(0.16, 0.38, 1.0) * 0.4 * (1.0 - rainStrength) * timeNoon;
+	vec3 skycolor_sunset = vec3(0.5, 0.7, 1.0) * 0.2 * (1.0 - rainStrength) * timeSunset;
+	vec3 skycolor_night = vec3(0.0, 0.0, 0.0) * timeMidnight;
+	vec3 skycolor_rain_day = vec3(1.2, 1.6, 2.0) * 0.1 * (timeSunrise + timeNoon + timeSunset) * rainStrength;
+	vec3 skycolor_rain_night = vec3(0.0, 0.0, 0.0) * timeMidnight * rainStrength;
+	ambientColor = skycolor_sunrise + skycolor_noon + skycolor_sunset + skycolor_night + skycolor_rain_day + skycolor_rain_night;
+	
+	vec3 moonlight = vec3(0.3, 0.55, 1.0) * 0.35;
+	sunlight = mix(sunlight, moonlight, timeMidnight);
+	
+	float timeSunriseSunset = 1.0 - timeNoon;
+		  timeSunriseSunset *= 1.0 - timeMidnight;
+	
+	vec3 colorSunglow_sunrise;
+	 colorSunglow_sunrise.r = 1.00f * timeSunriseSunset;
+	 colorSunglow_sunrise.g = 0.46f * timeSunriseSunset;
+	 colorSunglow_sunrise.b = 0.00f * timeSunriseSunset;
+	 
+	vec3 colorSunglow_noon;
+	 colorSunglow_noon.r = 1.0f * timeNoon;
+	 colorSunglow_noon.g = 1.0f * timeNoon;
+	 colorSunglow_noon.b = 1.0f * timeNoon;
+	 
+	vec3 colorSunglow_midnight;
+	 colorSunglow_midnight.r = 0.05f * 0.8f * 0.0055f * timeMidnight;
+	 colorSunglow_midnight.g = 0.20f * 0.8f * 0.0055f * timeMidnight;
+	 colorSunglow_midnight.b = 0.90f * 0.8f * 0.0055f * timeMidnight;
+	
+	vec3 colorSunglow = colorSunglow_sunrise + colorSunglow_noon + colorSunglow_midnight;
+	sunlight = mix(sunlight,colorSunglow,timeSunriseSunset);
+	
+	#ifndef MODERN
+	float torchWhiteBalance = 0.015f;
+	#else
+	float torchWhiteBalance = 1.0f;
+	#endif
+	
+	colorTorchlight = vec3(1.59f, 0.72f, 0.12f);
+	colorTorchlight = mix(colorTorchlight, vec3(0.8f), vec3(torchWhiteBalance));
+	colorTorchlight = pow(colorTorchlight, vec3(2.2f)) * 1.32f;
+	
 	texcoord = gl_MultiTexCoord0;
-	if(worldTime >= SUNRISE - FADE_START && worldTime <= SUNRISE + FADE_START)
-	{
-		extShadow = 1.0;
-		if(worldTime < SUNRISE - FADE_END) extShadow -= float(SUNRISE - FADE_END - worldTime) / float(FADE_END); else if(worldTime > SUNRISE + FADE_END)
-			extShadow -= float(worldTime - SUNRISE - FADE_END) / float(FADE_END);
-	}
-	else if(worldTime >= SUNSET - FADE_START && worldTime <= SUNSET + FADE_START)
-	{
-		extShadow = 1.0;
-		if(worldTime < SUNSET - FADE_END) extShadow -= float(SUNSET - FADE_END - worldTime) / float(FADE_END); else if(worldTime > SUNSET + FADE_END)
-			extShadow -= float(worldTime - SUNSET - FADE_END) / float(FADE_END);
-	}
-	else
-		extShadow = 0.0;
-	
-	if(worldTime < SUNSET || worldTime > SUNRISE)
-		lightPosition = normalize(sunPosition);
-	else
-		lightPosition = normalize(moonPosition);
-		
-	worldSunPosition = normalize((gbufferModelViewInverse * vec4(sunPosition, 0.0)).xyz);
-	
-	float fTime = float(worldTime);
-	if(fTime > SUNSET_START && fTime <= SUNSET_MID1)
-	{
-		float n = smoothstep(SUNSET_START, SUNSET_MID1, fTime);
-		cloudBase1 = mix(BASE1_DAY, BASE1_SUNSET, n);
-		cloudBase2 = mix(BASE2_DAY, BASE2_SUNSET, n);
-		cloudLight1 = mix(LIGHTING1_DAY, LIGHTING1_SUNSET, n);
-		cloudLight2 = mix(LIGHTING2_DAY, LIGHTING2_SUNSET, n);
-	}
-	else if(fTime > SUNSET_MID1 && fTime <= SUNSET_MID2)
-	{
-		cloudBase1 = BASE1_SUNSET;
-		cloudBase2 = BASE2_SUNSET;
-		cloudLight1 = LIGHTING1_SUNSET;
-		cloudLight2 = LIGHTING2_SUNSET;
-	}
-	else if(fTime > SUNSET_MID2 && fTime <= SUNSET_MID3)
-	{
-		float n = smoothstep(SUNSET_MID2, SUNSET_MID3, fTime);
-		cloudBase1 = mix(BASE1_SUNSET, BASE1_NIGHT_NOMOON, n);
-		cloudBase2 = mix(BASE2_SUNSET, BASE2_NIGHT_NOMOON, n);
-		cloudLight1 = mix(LIGHTING1_SUNSET, LIGHTING1_NIGHT_NOMOON, n);
-		cloudLight2 = mix(LIGHTING2_SUNSET, LIGHTING2_NIGHT_NOMOON, n);
-	}
-	else if(fTime > SUNSET_MID3 && fTime <= SUNSET_END)
-	{
-		float n = smoothstep(SUNSET_MID3, SUNSET_END, fTime);
-		cloudBase1 = mix(BASE1_NIGHT_NOMOON, BASE1_NIGHT, n);
-		cloudBase2 = mix(BASE2_NIGHT_NOMOON, BASE2_NIGHT, n);
-		cloudLight1 = mix(LIGHTING1_NIGHT_NOMOON, LIGHTING1_NIGHT, n);
-		cloudLight2 = mix(LIGHTING2_NIGHT_NOMOON, LIGHTING2_NIGHT, n);
-	}
-	else if(fTime > SUNSET_END && fTime <= SUNRISE_START)
-	{
-		cloudBase1 = BASE1_NIGHT;
-		cloudBase2 = BASE2_NIGHT;
-		cloudLight1 = LIGHTING1_NIGHT;
-		cloudLight2 = LIGHTING2_NIGHT;
-	}
-	else if(fTime > SUNRISE_START && fTime <= SUNRISE_MID1)
-	{
-		float n = smoothstep(SUNRISE_START, SUNRISE_MID1, fTime);
-		cloudBase1 = mix(BASE1_NIGHT, BASE1_NIGHT_NOMOON, n);
-		cloudBase2 = mix(BASE2_NIGHT, BASE2_NIGHT_NOMOON, n);
-		cloudLight1 = mix(LIGHTING1_NIGHT, LIGHTING1_NIGHT_NOMOON, n);
-		cloudLight2 = mix(LIGHTING2_NIGHT, LIGHTING2_NIGHT_NOMOON, n);
-	}
-	else if(fTime > SUNRISE_MID1 && fTime <= SUNRISE_MID2)
-	{
-		float n = smoothstep(SUNRISE_MID1, SUNRISE_MID2, fTime);
-		cloudBase1 = mix(BASE1_NIGHT_NOMOON, BASE1_SUNSET, n);
-		cloudBase2 = mix(BASE2_NIGHT_NOMOON, BASE2_SUNSET, n);
-		cloudLight1 = mix(LIGHTING1_NIGHT_NOMOON, LIGHTING1_SUNSET, n);
-		cloudLight2 = mix(LIGHTING2_NIGHT_NOMOON, LIGHTING2_SUNSET, n);
-	}
-	else if(fTime > SUNRISE_MID2 && fTime <= SUNRISE_MID3)
-	{
-		cloudBase1 = BASE1_SUNSET;
-		cloudBase2 = BASE2_SUNSET;
-		cloudLight1 = LIGHTING1_SUNSET;
-		cloudLight2 = LIGHTING2_SUNSET;
-	}
-	else if(fTime > SUNRISE_MID3 && fTime <= SUNRISE_END)
-	{
-		float n = smoothstep(SUNRISE_MID3, SUNRISE_END, fTime);
-		cloudBase1 = mix(BASE1_SUNSET, BASE1_DAY, n);
-		cloudBase2 = mix(BASE2_SUNSET, BASE2_DAY, n);
-		cloudLight1 = mix(LIGHTING1_SUNSET, LIGHTING1_DAY, n);
-		cloudLight2 = mix(LIGHTING2_SUNSET, LIGHTING2_DAY, n);
-	}
-	else
-	{
-		cloudBase1 = BASE1_DAY;
-		cloudBase2 = BASE2_DAY;
-		cloudLight1 = LIGHTING1_DAY;
-		cloudLight2 = LIGHTING2_DAY;
-	}
+
 }

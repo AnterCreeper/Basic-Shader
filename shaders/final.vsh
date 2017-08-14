@@ -12,6 +12,9 @@ varying float timeNoon;
 varying float timeSunset;
 varying float timeMidnight;
 
+varying vec3 ambientColor;
+varying vec3 moonlight;
+
 void main() {
 
 	gl_Position = ftransform();
@@ -28,6 +31,17 @@ void main() {
 	timeNoon     = pow(timeNoon, 1.0f/timePow);
 	timeSunset   = pow(timeSunset, timePow);
 	timeMidnight = pow(timeMidnight, 1.0f/timePow);
+	
+	ambientColor = vec3(0.058, 0.11, 0.28) * timeSunrise;
+	ambientColor = mix(ambientColor, vec3( 0.058, 0.11, 0.28), timeNoon);
+	ambientColor = mix(ambientColor, vec3( 0.058, 0.11, 0.28), timeSunset);
+	ambientColor /= ambientColor.b;
+	ambientColor = mix(ambientColor, vec3(0.3, 0.55, 1.0) * 0.1, timeMidnight);
+
+	moonlight = vec3(0.3, 0.55, 1.0) * 0.075;
+
+	ambientColor = mix(ambientColor, vec3(dot(ambientColor, vec3(0.3333))), 0.2 * timeMidnight);
+	moonlight = mix(moonlight, vec3(dot(moonlight, vec3(0.3333))), 0.2 * timeMidnight);
 	
 	texcoord = gl_MultiTexCoord0;
 
