@@ -1,0 +1,60 @@
+option.PCSS=Percentage-Closer Soft Shadow
+option.shadowMapResolution=Shadow Resolution
+option.shadowDistance=Shadow Distance
+
+option.HBAO=Horizon-Based Ambient Occlusion
+option.SMAA=Enhanced Subpixel Morphological AA
+
+option.WAVE_HEIGHT=Water Wave Height
+option.OPACITY=Water Opacity
+option.WAVING_RAIN=Rain Waving
+
+option.MODERN=White Light
+
+option.SPECULAR_TO_PBR_CONVERSION=Common Specular to PBR Conversion
+option.TEXTURE_RESOLUTION=Texture Resolution
+
+option.POM=Parallax Occlusion Mapping
+option.PARALLAX_DEPTH=Parallax Depth
+
+option.WET_EFFECT=Land Wet Effect
+
+screen.WATER=Water Properties
+
+screen.FOGS=Fog Options
+option.FOG=Fog Global Switch
+option.UNDERWATER_FOG=UnderWater Fog
+
+screen.LENS=Lens Effect
+screen.DOFS=Depth Of Field
+screen.DOF=DOF Switch
+option.DOF_BlurSize=Blur Factor of DOF
+option.MOTION_BLUR=Motion Blur
+option.RAIN_LENS=Rain Drops Lens Refract
+option.CINEMATIC_MODE=Cinematic Mode
+option.LENS_FLARE=Lens Flare
+
+option.CAMERA_NOISE=Camera Noise
+option.NoiseStrength=Noise Strength
+
+option.QUALITY=Anti-Aliasing Quality
+value.QUALITY.LOW=Low
+value.QUALITY.MEDIUM=Medium
+value.QUALITY.HIGH=High
+value.QUALITY.ULTRA=Ultra
+
+profile.LOW=Low
+profile.MEDIUM=Medium
+profile.HIGH=High
+profile.ULTRA=Ultra
+
+option.NO_CLOUDS=No Clouds Switch
+option.GODRAYS=God Rays
+screen.LIGHTING=Lighting & Shadows Options
+screen.SHADOW_OPTIONS=Shadows Settings
+screen.MATERIALS=Texture Materials Settings
+screen.ENVIRONMENT=Environment Effects Options
+screen.POSTPROCESSING=Post-Processing Options
+
+option.Version=Preview Version
+option.PCF_SIZE_HALF=Shadow Filter Quality
